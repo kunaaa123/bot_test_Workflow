@@ -68,7 +68,7 @@ jobs:
               "header": {
                 "title": {
                   "tag": "plain_text",
-                  "content": "🚀🚀🚀 Frontend Deployment Successful!!!"
+                  "content": "Backend Deployment"
                 },
                 "template": "blue"
               },
@@ -84,7 +84,7 @@ jobs:
                   "preview": true,
                   "compact_width": false
                 },
-
+                
                 {
                   "tag": "column_set",
                   "flex_mode": "none",
@@ -176,14 +176,7 @@ jobs:
                     }
                   ]
                 },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**Recent Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
-                  }
-                },
-
+              
                 {
                   "tag": "action",
                   "actions": [
@@ -197,8 +190,7 @@ jobs:
                       "type": "primary"
                     }
                   ]
-                },
-
+                }
               ]
             }
           }'
