@@ -68,7 +68,7 @@ jobs:
               "header": {
                 "title": {
                   "tag": "plain_text",
-                  "content": "🚀🚀🚀 Frontend Deployment Successful!!!"
+                  "content": "Backend Deployment"
                 },
                 "template": "blue"
               },
@@ -83,13 +83,6 @@ jobs:
                   "mode": "fit_horizontal",
                   "preview": true,
                   "compact_width": false
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "content": "\n🎉 🎉 🎉 Deployment completed successfully! Great work team! Keep up the excellent momentum! 😘 😘 😘",
-                    "tag": "lark_md"
-                  }
                 },
                 {
                   "tag": "column_set",
@@ -115,7 +108,7 @@ jobs:
                               "elements": [
                                 {
                                   "tag": "markdown",
-                                  "content": "**Environment\n<font color=\"green\">🟢 DEV</font>**",
+                                  "content": "**Environment\n<font color=\"green\">DEV</font>**",
                                   "text_align": "center"
                                 }
                               ]
@@ -143,7 +136,7 @@ jobs:
                               "elements": [
                                 {
                                   "tag": "markdown",
-                                  "content": "**🤖 Deployer\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>**",
+                                  "content": "**Deployer\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>**",
                                   "text_align": "center"
                                 }
                               ]
@@ -171,7 +164,7 @@ jobs:
                               "elements": [
                                 {
                                   "tag": "markdown",
-                                  "content": "**Service Name\n<font color=\"red\">🚀 ${{ github.event.repository.name }}</font>**",
+                                  "content": "**Service Name\n<font color=\"red\">${{ github.event.repository.name }}</font>**",
                                   "text_align": "center"
                                 }
                               ]
@@ -186,14 +179,7 @@ jobs:
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Recent Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
-                  }
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "content": "**💪 Every successful deployment depends on the close cooperation of all teams!\n💪 Sincerely thank all colleagues and supporters for their efforts in this project!**",
-                    "tag": "lark_md"
+                    "content": "**Recent Commit Messages**\n${{ steps.commit_info.outputs.commit_list }}"
                   }
                 },
                 {
@@ -210,25 +196,6 @@ jobs:
                     }
                   ]
                 },
-                {
-                  "tag": "note",
-                  "elements": [
-                    {
-                      "tag": "plain_text",
-                      "content": "💡 [Internal] Deployment notification - Please handle with care"
-                    }
-                  ]
-                }
               ]
             }
           }'
-    
-    - name: Deploy application
-      run: |
-        echo "🚀 Deploying frontend application..."
-        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
-        # npm run build
-        # aws s3 sync dist/ s3://your-bucket/
-        # docker build -t frontend-app .
-        # docker push frontend-app
-        echo "✅ Frontend deployment completed!"
