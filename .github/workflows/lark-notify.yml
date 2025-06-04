@@ -40,7 +40,7 @@ jobs:
     
     - name: Download GitHub logo
       run: |
-        curl -o github_logo.png https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        curl -o github_logo.png https://raw.githubusercontent.com/kunaaa123/bot_test_Workflow/refs/heads/main/github_logo.png
     
     - name: Upload image to Lark
       id: upload_image
