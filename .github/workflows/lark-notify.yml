@@ -1,4 +1,4 @@
-name: Notify to Lark on Push
+name: Lark Notification
 
 on:
   push:
@@ -6,17 +6,44 @@ on:
       - main
 
 jobs:
-  notify:
+  notify-lark:
     runs-on: ubuntu-latest
 
-    env:
-      ENVIRONMENT: production
-      REPO_URL: ${{ github.repositoryUrl }}
-
     steps:
-      - name: Notify Lark
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Get Tenant Access Token
+        id: get-token
         run: |
-          curl -X POST https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff \
+          response=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+            -H "Content-Type: application/json" \
+            -d "{\"app_id\": \"${{ secrets.LARK_APP_ID }}\", \"app_secret\": \"${{ secrets.LARK_APP_SECRET }}\"}")
+          token=$(echo $response | jq -r '.tenant_access_token')
+          echo "TOKEN=$token" >> $GITHUB_ENV
+        env:
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+
+      - name: Upload Image to Lark
+        id: upload-image
+        run: |
+          curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
+            -H "Authorization: Bearer ${{ env.TOKEN }}" \
+            -F "image_type=message" \
+            -F "image=@github_logo.png" \
+            > response.json
+          image_key=$(jq -r '.data.image_key' response.json)
+          echo "IMAGE_KEY=$image_key" >> $GITHUB_ENV
+
+      - name: Send Lark Notification
+        run: |
+          curl -s -X POST "${{ secrets.LARK_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d '{
               "msg_type": "interactive",
@@ -24,54 +51,36 @@ jobs:
                 "header": {
                   "title": {
                     "tag": "plain_text",
-                    "content": "🚀 Deployment Notification"
+                    "content": "Backend Deployment"
                   },
                   "template": "blue"
                 },
                 "elements": [
                   {
-                    "tag": "div",
-                    "fields": [
-                      {
-                        "is_short": true,
-                        "text": {
-                          "tag": "lark_md",
-                          "content": "**Branch:** <font color=\"green\">`${{ github.ref_name }}`</font>"
-                        }
-                      },
-                      {
-                        "is_short": true,
-                        "text": {
-                          "tag": "lark_md",
-                          "content": "**Deployer:** `${{ github.actor }}`"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "tag": "div",
-                    "fields": [
-                      {
-                        "is_short": true,
-                        "text": {
-                          "tag": "lark_md",
-                          "content": "**Environment:** <font color=\"green\">`${{ env.ENVIRONMENT }}`</font>"
-                        }
-                      },
-                      {
-                        "is_short": true,
-                        "text": {
-                          "tag": "lark_md",
-                          "content": "**Commit:** [View Commit](${{ github.event.head_commit.url }})"
-                        }
-                      }
-                    ]
+                    "tag": "img",
+                    "img_key": "${{ env.IMAGE_KEY }}",
+                    "mode": "fit_horizontal",
+                    "preview": true
                   },
                   {
                     "tag": "div",
                     "text": {
                       "tag": "lark_md",
-                      "content": "**Commit Messages** 😊\n> ${{ github.event.head_commit.message }}"
+                      "content": "**🤖 Deployer**\n${{ github.actor }}"
+                    }
+                  },
+                  {
+                    "tag": "div",
+                    "text": {
+                      "tag": "lark_md",
+                      "content": "**Service Name**\n${{ github.repository }}"
+                    }
+                  },
+                  {
+                    "tag": "div",
+                    "text": {
+                      "tag": "lark_md",
+                      "content": "**Commit Message**\n• ${{ github.event.commits[0].message }}"
                     }
                   },
                   {
@@ -80,14 +89,16 @@ jobs:
                       {
                         "tag": "button",
                         "text": {
-                          "tag": "plain_text",
-                          "content": "View Repo"
+                          "content": "ดู Repository 🔍",
+                          "tag": "plain_text"
                         },
-                        "type": "default",
-                        "url": "${{ env.REPO_URL }}"
+                        "url": "${{ github.event.repository.html_url }}",
+                        "type": "primary"
                       }
                     ]
                   }
                 ]
               }
             }'
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
