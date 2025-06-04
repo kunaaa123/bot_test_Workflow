@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ENVIRONMENT: production   # กำหนด environment ตรงนี้เลย (แก้ได้ตามจริง)
+      ENVIRONMENT: production
       REPO_URL: ${{ github.repositoryUrl }}
 
     steps:
@@ -30,13 +30,21 @@ jobs:
                 },
                 "elements": [
                   {
+                    "tag": "img",
+                    "img_key": "img_v2_12345678-1234-1234-1234-1234567890ab",  # ต้องอัปโหลดรูป GitHub Logo ไปที่ Lark ก่อน แล้วใช้ img_key
+                    "alt": {
+                      "tag": "plain_text",
+                      "content": "GitHub Logo"
+                    }
+                  },
+                  {
                     "tag": "div",
                     "fields": [
                       {
                         "is_short": true,
                         "text": {
                           "tag": "lark_md",
-                          "content": "**Branch:** `'${{ github.ref_name }}'`"
+                          "content": "**Branch:** <font color=\"green\">`${{ github.ref_name }}`</font>"
                         }
                       },
                       {
@@ -55,7 +63,7 @@ jobs:
                         "is_short": true,
                         "text": {
                           "tag": "lark_md",
-                          "content": "**Environment:** `${{ env.ENVIRONMENT }}`"
+                          "content": "**Environment:** <font color=\"green\">`${{ env.ENVIRONMENT }}`</font>"
                         }
                       },
                       {
@@ -71,7 +79,7 @@ jobs:
                     "tag": "div",
                     "text": {
                       "tag": "lark_md",
-                      "content": "> ${{ github.event.head_commit.message }}"
+                      "content": "**Commit Messages** 😊\n> ${{ github.event.head_commit.message }}"
                     }
                   },
                   {
