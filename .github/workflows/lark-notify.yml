@@ -18,27 +18,54 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Verify secrets
+        run: |
+          if [ -z "${{ secrets.LARK_WEBHOOK }}" ]; then
+            echo "Error: LARK_WEBHOOK secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.LARK_APP_ID }}" ] || [ -z "${{ secrets.LARK_APP_SECRET }}" ]; then
+            echo "Error: LARK_APP_ID or LARK_APP_SECRET is not set"
+            exit 1
+          fi
+
       - name: Get Tenant Access Token
         id: get-token
         run: |
           response=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
             -H "Content-Type: application/json" \
             -d "{\"app_id\": \"${{ secrets.LARK_APP_ID }}\", \"app_secret\": \"${{ secrets.LARK_APP_SECRET }}\"}")
-          token=$(echo $response | jq -r '.tenant_access_token')
+          echo "Token response: $response"
+          token=$(echo $response | jq -r '.tenant_access_token // empty')
+          if [ -z "$token" ]; then
+            echo "Error: Failed to obtain tenant access token"
+            exit 1
+          fi
           echo "TOKEN=$token" >> $GITHUB_ENV
         env:
           LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
           LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
 
+      - name: Verify image exists
+        run: |
+          if [ ! -f "github_logo.png" ]; then
+            echo "Error: github_logo.png not found in repository"
+            exit 1
+          fi
+
       - name: Upload Image to Lark
         id: upload-image
         run: |
-          curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
+          response=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
             -H "Authorization: Bearer ${{ env.TOKEN }}" \
             -F "image_type=message" \
-            -F "image=@github_logo.png" \
-            > response.json
-          image_key=$(jq -r '.data.image_key' response.json)
+            -F "image=@github_logo.png")
+          echo "Image upload response: $response"
+          image_key=$(echo $response | jq -r '.data.image_key // empty')
+          if [ -z "$image_key" ]; then
+            echo "Error: Failed to upload image to Lark"
+            exit 1
+          fi
           echo "IMAGE_KEY=$image_key" >> $GITHUB_ENV
 
       - name: Send Lark Notification
@@ -99,6 +126,6 @@ jobs:
                   }
                 ]
               }
-            }'
+            }' || { echo "Error: Failed to send Lark notification"; exit 1; }
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
