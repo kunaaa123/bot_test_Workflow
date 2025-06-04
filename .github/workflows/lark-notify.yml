@@ -62,10 +62,13 @@ jobs:
           -d '{
             "msg_type": "interactive",
             "card": {
+              "config": {
+                "wide_screen_mode": true
+              },
               "header": {
                 "title": {
                   "tag": "plain_text",
-                  "content": "Frontend Deployment"
+                  "content": "🚀🚀🚀 Frontend Deployment Successful!!!"
                 },
                 "template": "blue"
               },
@@ -73,28 +76,51 @@ jobs:
                 {
                   "tag": "img",
                   "img_key": "${{ steps.upload_image.outputs.image_key }}",
+                  "alt": {
+                    "tag": "plain_text",
+                    "content": "GitHub Logo"
+                  },
                   "mode": "fit_horizontal",
-                  "preview": false
+                  "preview": true,
+                  "compact_width": false
                 },
                 {
-                  "tag": "hr"
+                  "tag": "div",
+                  "text": {
+                    "content": "\n🎉 🎉 🎉 Deployment completed successfully! Great work team! Keep up the excellent momentum! 😘 😘 😘",
+                    "tag": "lark_md"
+                  }
                 },
                 {
                   "tag": "column_set",
                   "flex_mode": "none",
-                  "background_style": "grey",
+                  "background_style": "default",
                   "columns": [
                     {
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
+                      "vertical_align": "top",
                       "elements": [
                         {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**ENV**\nDEV"
-                          }
+                          "tag": "column_set",
+                          "flex_mode": "none",
+                          "background_style": "grey",
+                          "columns": [
+                            {
+                              "tag": "column",
+                              "width": "weighted",
+                              "weight": 1,
+                              "vertical_align": "top",
+                              "elements": [
+                                {
+                                  "tag": "markdown",
+                                  "content": "**Environment\n<font color=\"green\">🟢 DEV</font>**",
+                                  "text_align": "center"
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     },
@@ -102,40 +128,73 @@ jobs:
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
+                      "vertical_align": "top",
                       "elements": [
                         {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "** Deployer**\n ${{ steps.commit_info.outputs.author_name }}"
-                          }
+                          "tag": "column_set",
+                          "flex_mode": "none",
+                          "background_style": "grey",
+                          "columns": [
+                            {
+                              "tag": "column",
+                              "width": "weighted",
+                              "weight": 1,
+                              "vertical_align": "top",
+                              "elements": [
+                                {
+                                  "tag": "markdown",
+                                  "content": "**🤖 Deployer\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>**",
+                                  "text_align": "center"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "column",
+                      "width": "weighted",
+                      "weight": 1,
+                      "vertical_align": "top",
+                      "elements": [
+                        {
+                          "tag": "column_set",
+                          "flex_mode": "none",
+                          "background_style": "grey",
+                          "columns": [
+                            {
+                              "tag": "column",
+                              "width": "weighted",
+                              "weight": 1,
+                              "vertical_align": "top",
+                              "elements": [
+                                {
+                                  "tag": "markdown",
+                                  "content": "**Service Name\n<font color=\"red\">🚀 ${{ github.event.repository.name }}</font>**",
+                                  "text_align": "center"
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     }
                   ]
                 },
                 {
-                  "tag": "hr"
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**Recent Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
+                  }
                 },
                 {
                   "tag": "div",
                   "text": {
-                    "tag": "lark_md",
-                    "content": "**Service Name**\n ${{ github.event.repository.name }}"
+                    "content": "**💪 Every successful deployment depends on the close cooperation of all teams!\n💪 Sincerely thank all colleagues and supporters for their efforts in this project!**",
+                    "tag": "lark_md"
                   }
-                },
-                {
-                  "tag": "hr"
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**Commit Messages** \n${{ steps.commit_info.outputs.commit_list }}"
-                  }
-                },
-                {
-                  "tag": "hr"
                 },
                 {
                   "tag": "action",
@@ -150,7 +209,26 @@ jobs:
                       "type": "primary"
                     }
                   ]
+                },
+                {
+                  "tag": "note",
+                  "elements": [
+                    {
+                      "tag": "plain_text",
+                      "content": "💡 [Internal] Deployment notification - Please handle with care"
+                    }
+                  ]
                 }
               ]
             }
           }'
+    
+    - name: Deploy application
+      run: |
+        echo "🚀 Deploying frontend application..."
+        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
+        # npm run build
+        # aws s3 sync dist/ s3://your-bucket/
+        # docker build -t frontend-app .
+        # docker push frontend-app
+        echo "✅ Frontend deployment completed!"
