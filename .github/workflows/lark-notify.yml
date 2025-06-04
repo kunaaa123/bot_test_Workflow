@@ -84,13 +84,7 @@ jobs:
                   "preview": true,
                   "compact_width": false
                 },
-                {
-                  "tag": "div",
-                  "text": {
-                    "content": "\n🎉 🎉 🎉 Deployment completed successfully! Great work team! Keep up the excellent momentum! 😘 😘 😘",
-                    "tag": "lark_md"
-                  }
-                },
+
                 {
                   "tag": "column_set",
                   "flex_mode": "none",
@@ -189,13 +183,7 @@ jobs:
                     "content": "**Recent Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
                   }
                 },
-                {
-                  "tag": "div",
-                  "text": {
-                    "content": "**💪 Every successful deployment depends on the close cooperation of all teams!\n💪 Sincerely thank all colleagues and supporters for their efforts in this project!**",
-                    "tag": "lark_md"
-                  }
-                },
+
                 {
                   "tag": "action",
                   "actions": [
@@ -210,15 +198,7 @@ jobs:
                     }
                   ]
                 },
-                {
-                  "tag": "note",
-                  "elements": [
-                    {
-                      "tag": "plain_text",
-                      "content": "💡 [Internal] Deployment notification - Please handle with care"
-                    }
-                  ]
-                }
+
               ]
             }
           }'
