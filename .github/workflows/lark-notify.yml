@@ -1,131 +1,122 @@
-name: Lark Notification
+name: Deploy and Notify Lark
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, master ]  # หรือ branch ที่ต้องการ
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
+  APP_ID: "cli_a8b2c70af7389029"
+  APP_SECRET: "QUbHQALAU0xrxWid9QU8Hb50wpY1wtwv"
 
 jobs:
-  notify-lark:
+  deploy-and-notify:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Verify secrets
-        run: |
-          if [ -z "${{ secrets.LARK_WEBHOOK }}" ]; then
-            echo "Error: LARK_WEBHOOK secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.LARK_APP_ID }}" ] || [ -z "${{ secrets.LARK_APP_SECRET }}" ]; then
-            echo "Error: LARK_APP_ID or LARK_APP_SECRET is not set"
-            exit 1
-          fi
-
-      - name: Get Tenant Access Token
-        id: get-token
-        run: |
-          response=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
-            -H "Content-Type: application/json" \
-            -d "{\"app_id\": \"${{ secrets.LARK_APP_ID }}\", \"app_secret\": \"${{ secrets.LARK_APP_SECRET }}\"}")
-          echo "Token response: $response"
-          token=$(echo $response | jq -r '.tenant_access_token // empty')
-          if [ -z "$token" ]; then
-            echo "Error: Failed to obtain tenant access token"
-            exit 1
-          fi
-          echo "TOKEN=$token" >> $GITHUB_ENV
-        env:
-          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
-          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
-
-      - name: Verify image exists
-        run: |
-          if [ ! -f "github_logo.png" ]; then
-            echo "Error: github_logo.png not found in repository"
-            exit 1
-          fi
-
-      - name: Upload Image to Lark
-        id: upload-image
-        run: |
-          response=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
-            -H "Authorization: Bearer ${{ env.TOKEN }}" \
-            -F "image_type=message" \
-            -F "image=@github_logo.png")
-          echo "Image upload response: $response"
-          image_key=$(echo $response | jq -r '.data.image_key // empty')
-          if [ -z "$image_key" ]; then
-            echo "Error: Failed to upload image to Lark"
-            exit 1
-          fi
-          echo "IMAGE_KEY=$image_key" >> $GITHUB_ENV
-
-      - name: Send Lark Notification
-        run: |
-          curl -s -X POST "${{ secrets.LARK_WEBHOOK }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "msg_type": "interactive",
-              "card": {
-                "header": {
-                  "title": {
-                    "tag": "plain_text",
-                    "content": "Backend Deployment"
-                  },
-                  "template": "blue"
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get commit info
+      id: commit_info
+      run: |
+        echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
+        echo "repo_url=${{ github.repositoryUrl }}" >> $GITHUB_OUTPUT
+    
+    - name: Get Lark tenant access token
+      id: get_token
+      run: |
+        TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app_id": "'$APP_ID'",
+            "app_secret": "'$APP_SECRET'"
+          }' | jq -r '.tenant_access_token')
+        echo "token=$TOKEN" >> $GITHUB_OUTPUT
+    
+    - name: Download GitHub logo
+      run: |
+        curl -o github_logo.png https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+    
+    - name: Upload image to Lark
+      id: upload_image
+      run: |
+        IMAGE_KEY=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
+          -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+          -F "image_type=message" \
+          -F "image=@github_logo.png" | jq -r '.data.image_key')
+        echo "image_key=$IMAGE_KEY" >> $GITHUB_OUTPUT
+    
+    - name: Send notification to Lark
+      run: |
+        curl -X POST "$LARK_WEBHOOK" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "msg_type": "interactive",
+            "card": {
+              "header": {
+                "title": {
+                  "tag": "plain_text",
+                  "content": "Backend Deployment"
                 },
-                "elements": [
-                  {
-                    "tag": "img",
-                    "img_key": "${{ env.IMAGE_KEY }}",
-                    "mode": "fit_horizontal",
-                    "preview": true
-                  },
-                  {
-                    "tag": "div",
-                    "text": {
-                      "tag": "lark_md",
-                      "content": "**🤖 Deployer**\n${{ github.actor }}"
-                    }
-                  },
-                  {
-                    "tag": "div",
-                    "text": {
-                      "tag": "lark_md",
-                      "content": "**Service Name**\n${{ github.repository }}"
-                    }
-                  },
-                  {
-                    "tag": "div",
-                    "text": {
-                      "tag": "lark_md",
-                      "content": "**Commit Message**\n• ${{ github.event.commits[0].message }}"
-                    }
-                  },
-                  {
-                    "tag": "action",
-                    "actions": [
-                      {
-                        "tag": "button",
-                        "text": {
-                          "content": "ดู Repository 🔍",
-                          "tag": "plain_text"
-                        },
-                        "url": "${{ github.event.repository.html_url }}",
-                        "type": "primary"
-                      }
-                    ]
+                "template": "blue"
+              },
+              "elements": [
+                {
+                  "tag": "img",
+                  "img_key": "${{ steps.upload_image.outputs.image_key }}",
+                  "mode": "fit_horizontal",
+                  "preview": true
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**🤖 Deployer**\n${{ steps.commit_info.outputs.author_name }}"
                   }
-                ]
-              }
-            }' || { echo "Error: Failed to send Lark notification"; exit 1; }
-        env:
-          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**Service Name**\n${{ github.event.repository.name }}"
+                  }
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**Commit Message**\n• ${{ steps.commit_info.outputs.commit_message }}"
+                  }
+                },
+                {
+                  "tag": "action",
+                  "actions": [
+                    {
+                      "tag": "button",
+                      "text": {
+                        "content": "ดู Repository 🔍",
+                        "tag": "plain_text"
+                      },
+                      "url": "${{ github.event.repository.html_url }}",
+                      "type": "primary"
+                    }
+                  ]
+                }
+              ]
+            }
+          }'
+    
+    # เพิ่ม step อื่นๆ สำหรับ deployment ตามต้องการ
+    - name: Deploy application
+      run: |
+        echo "🚀 Deploying application..."
+        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
+        # docker build -t myapp .
+        # docker push myapp
+        # kubectl apply -f deployment.yaml
+        echo "✅ Deployment completed!"
