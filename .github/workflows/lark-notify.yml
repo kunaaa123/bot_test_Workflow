@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Notify Lark
         run: |
-          curl -X POST https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+          curl -X POST https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff
             -H "Content-Type: application/json" \
             -d '{
               "msg_type": "text",
