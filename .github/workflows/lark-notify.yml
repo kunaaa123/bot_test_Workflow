@@ -1,122 +1,278 @@
-name: Deploy and Notify Lark
-
-on:
-  push:
-    branches: [ main, master ]  # หรือ branch ที่ต้องการ
-  pull_request:
-    branches: [ main, master ]
-
-env:
-  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
-  APP_ID: "cli_a8b2c70af7389029"
-  APP_SECRET: "QUbHQALAU0xrxWid9QU8Hb50wpY1wtwv"
-
-jobs:
-  deploy-and-notify:
-    runs-on: ubuntu-latest
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lark Card - Frontend Deployment</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .card-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #e8e8e8;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #4c6ef5, #364fc7);
+            color: white;
+            padding: 16px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .github-banner {
+            background: linear-gradient(135deg, #4c6ef5, #364fc7);
+            height: 120px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 30px;
+            overflow: hidden;
+        }
+        
+        .github-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .github-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .github-logo svg {
+            width: 45px;
+            height: 45px;
+            fill: #24292e;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4c6ef5;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            color: #28a745;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .deployer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .deployer-avatar {
+            width: 24px;
+            height: 24px;
+            background: #6c757d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .commit-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .commit-header {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 12px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .commit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .commit-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .commit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .commit-item::before {
+            content: "•";
+            color: #6c757d;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+        
+        .commit-link {
+            color: #4c6ef5;
+            text-decoration: none;
+        }
+        
+        .commit-link:hover {
+            text-decoration: underline;
+        }
+        
+        .action-button {
+            background: transparent;
+            color: #4c6ef5;
+            border: 2px solid #4c6ef5;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .action-button:hover {
+            background: #4c6ef5;
+            color: white;
+        }
+        
+        .preview-note {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="card-header">
+            Frontend Deployment
+        </div>
+        
+        <div class="github-banner">
+            <div class="github-logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-section">
+                    <div class="info-label">ENV</div>
+                    <div class="info-value">DEV</div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">Deployer</div>
+                    <div class="info-value">
+                        <div class="deployer-info">
+                            <div class="deployer-avatar">🤖</div>
+                            rutchanai
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section" style="grid-column: 1 / -1; margin-bottom: 20px;">
+                <div class="info-label">Service Name</div>
+                <div class="info-value">tagth-v2-content</div>
+            </div>
+            
+            <div class="commit-section">
+                <div class="commit-header">
+                    Commit Messages 🤔
+                </div>
+                <ul class="commit-list">
+                    <li class="commit-item">chore: ad description to jobs</li>
+                    <li class="commit-item">
+                        Merge branch develop of 
+                        <a href="https://github.com/TAGTHAi/tagth-v2-content" class="commit-link" target="_blank">
+                            https://github.com/TAGTHAi/tagth-v2-content
+                        </a> 
+                        into develop
+                    </li>
+                    <li class="commit-item">chore: update noti</li>
+                </ul>
+            </div>
+            
+            <button class="action-button" onclick="window.open('https://github.com/TAGTHAi/tagth-v2-content', '_blank')">
+                View repo
+            </button>
+        </div>
+    </div>
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Get commit info
-      id: commit_info
-      run: |
-        echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
-        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
-        echo "repo_url=${{ github.repositoryUrl }}" >> $GITHUB_OUTPUT
-    
-    - name: Get Lark tenant access token
-      id: get_token
-      run: |
-        TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "app_id": "'$APP_ID'",
-            "app_secret": "'$APP_SECRET'"
-          }' | jq -r '.tenant_access_token')
-        echo "token=$TOKEN" >> $GITHUB_OUTPUT
-    
-    - name: Download GitHub logo
-      run: |
-        curl -o github_logo.png https://raw.githubusercontent.com/kunaaa123/bot_test_Workflow/refs/heads/main/github_logo.png
-    
-    - name: Upload image to Lark
-      id: upload_image
-      run: |
-        IMAGE_KEY=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
-          -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
-          -F "image_type=message" \
-          -F "image=@github_logo.png" | jq -r '.data.image_key')
-        echo "image_key=$IMAGE_KEY" >> $GITHUB_OUTPUT
-    
-    - name: Send notification to Lark
-      run: |
-        curl -X POST "$LARK_WEBHOOK" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "msg_type": "interactive",
-            "card": {
-              "header": {
-                "title": {
-                  "tag": "plain_text",
-                  "content": "Backend Deployment"
-                },
-                "template": "blue"
-              },
-              "elements": [
-                {
-                  "tag": "img",
-                  "img_key": "${{ steps.upload_image.outputs.image_key }}",
-                  "mode": "fit_horizontal",
-                  "preview": true
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**🤖 Deployer**\n${{ steps.commit_info.outputs.author_name }}"
-                  }
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**Service Name**\n${{ github.event.repository.name }}"
-                  }
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**Commit Message**\n• ${{ steps.commit_info.outputs.commit_message }}"
-                  }
-                },
-                {
-                  "tag": "action",
-                  "actions": [
-                    {
-                      "tag": "button",
-                      "text": {
-                        "content": "ดู Repository 🔍",
-                        "tag": "plain_text"
-                      },
-                      "url": "${{ github.event.repository.html_url }}",
-                      "type": "primary"
-                    }
-                  ]
-                }
-              ]
-            }
-          }'
-    
-    # เพิ่ม step อื่นๆ สำหรับ deployment ตามต้องการ
-    - name: Deploy application
-      run: |
-        echo "🚀 Deploying application..."
-        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
-        # docker build -t myapp .
-        # docker push myapp
-        # kubectl apply -f deployment.yaml
-        echo "✅ Deployment completed!"
+    <div class="preview-note">
+        🎯 ตัวอย่าง Lark Card แบบ Frontend Deployment<br>
+        ที่มี layout เหมือนกับรูปที่คุณแสดงให้ดู
+    </div>
+</body>
+</html>
