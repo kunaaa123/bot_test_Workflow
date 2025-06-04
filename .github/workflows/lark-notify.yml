@@ -1,1 +1,22 @@
+name: Notify to Lark on Push
 
+on:
+  push:
+    branches:
+      - main  # เปลี่ยนเป็น branch ที่คุณใช้งานจริง
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Lark
+        run: |
+          curl -X POST https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+            -H "Content-Type: application/json" \
+            -d '{
+              "msg_type": "text",
+              "content": {
+                "text": "🚀 มีการ push ใหม่ใน branch `main` โดย ${{ github.actor }} \n🔗 Commit: ${{ github.event.head_commit.url }}"
+              }
+            }'
