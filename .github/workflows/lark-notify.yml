@@ -1,116 +1,122 @@
-name: Backend Deployment
+name: Deploy and Notify Lark
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, master ]  # หรือ branch ที่ต้องการ
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
+  APP_ID: "cli_a8b2c70af7389029"
+  APP_SECRET: "QUbHQALAU0xrxWid9QU8Hb50wpY1wtwv"
 
 jobs:
-  deploy:
+  deploy-and-notify:
     runs-on: ubuntu-latest
-
-    env:
-      LARK_WEBHOOK_URL: "https://open.larkoffice.com/open-apis/bot/v2/hook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-      LARK_BOT_TOKEN: "your-bot-token"
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Upload card image
-        id: upload_image
-        run: |
-          curl -X POST "https://open.larkoffice.com/open-apis/im/v1/images" \
-            -H "Authorization: Bearer $LARK_BOT_TOKEN" \
-            -F "image=@./assets/backend-banner.png" \
-            | jq -r '.data.image_key' > image_key.txt
-
-      - name: Read image key
-        id: read_image_key
-        run: echo "image_key=$(cat image_key.txt)" >> $GITHUB_ENV
-
-      - name: Send notification to Lark
-        run: |
-          curl -X POST "$LARK_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "msg_type": "interactive",
-              "card": {
-                "header": {
-                  "title": {
-                    "tag": "plain_text",
-                    "content": "🚀 Backend Deployment"
-                  },
-                  "template": "green"
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get commit info
+      id: commit_info
+      run: |
+        echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
+        echo "repo_url=${{ github.repositoryUrl }}" >> $GITHUB_OUTPUT
+    
+    - name: Get Lark tenant access token
+      id: get_token
+      run: |
+        TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app_id": "'$APP_ID'",
+            "app_secret": "'$APP_SECRET'"
+          }' | jq -r '.tenant_access_token')
+        echo "token=$TOKEN" >> $GITHUB_OUTPUT
+    
+    - name: Download GitHub logo
+      run: |
+        curl -o github_logo.png https://raw.githubusercontent.com/kunaaa123/bot_test_Workflow/refs/heads/main/github_logo.png
+    
+    - name: Upload image to Lark
+      id: upload_image
+      run: |
+        IMAGE_KEY=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
+          -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+          -F "image_type=message" \
+          -F "image=@github_logo.png" | jq -r '.data.image_key')
+        echo "image_key=$IMAGE_KEY" >> $GITHUB_OUTPUT
+    
+    - name: Send notification to Lark
+      run: |
+        curl -X POST "$LARK_WEBHOOK" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "msg_type": "interactive",
+            "card": {
+              "header": {
+                "title": {
+                  "tag": "plain_text",
+                  "content": "Backend Deployment"
                 },
-                "elements": [
-                  {
-                    "tag": "img",
-                    "img_key": "'${{ env.image_key }}'",
-                    "mode": "fit_horizontal",
-                    "preview": true
-                  },
-                  {
-                    "tag": "column_set",
-                    "columns": [
-                      {
-                        "tag": "column",
-                        "width": "weighted",
-                        "weight": 1,
-                        "elements": [
-                          {
-                            "tag": "div",
-                            "text": {
-                              "tag": "lark_md",
-                              "content": "**ENV**\nProduction"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "tag": "column",
-                        "width": "weighted",
-                        "weight": 1,
-                        "elements": [
-                          {
-                            "tag": "div",
-                            "text": {
-                              "tag": "lark_md",
-                              "content": "**Deployer**\n${{ github.actor }}"
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "tag": "div",
-                    "text": {
-                      "tag": "lark_md",
-                      "content": "**Service Name**\n${{ github.repository }}"
-                    }
-                  },
-                  {
-                    "tag": "div",
-                    "text": {
-                      "tag": "lark_md",
-                      "content": "**Commit Messages 👀**\n• ${{ github.event.head_commit.message }}"
-                    }
-                  },
-                  {
-                    "tag": "action",
-                    "actions": [
-                      {
-                        "tag": "button",
-                        "text": {
-                          "content": "View repo",
-                          "tag": "plain_text"
-                        },
-                        "url": "https://github.com/${{ github.repository }}",
-                        "type": "primary"
-                      }
-                    ]
+                "template": "blue"
+              },
+              "elements": [
+                {
+                  "tag": "img",
+                  "img_key": "${{ steps.upload_image.outputs.image_key }}",
+                  "mode": "fit_horizontal",
+                  "preview": true
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**🤖 Deployer**\n${{ steps.commit_info.outputs.author_name }}"
                   }
-                ]
-              }
-            }'
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**Service Name**\n${{ github.event.repository.name }}"
+                  }
+                },
+                {
+                  "tag": "div",
+                  "text": {
+                    "tag": "lark_md",
+                    "content": "**Commit Message**\n• ${{ steps.commit_info.outputs.commit_message }}"
+                  }
+                },
+                {
+                  "tag": "action",
+                  "actions": [
+                    {
+                      "tag": "button",
+                      "text": {
+                        "content": "ดู Repository 🔍",
+                        "tag": "plain_text"
+                      },
+                      "url": "${{ github.event.repository.html_url }}",
+                      "type": "primary"
+                    }
+                  ]
+                }
+              ]
+            }
+          }'
+    
+    # เพิ่ม step อื่นๆ สำหรับ deployment ตามต้องการ
+    - name: Deploy application
+      run: |
+        echo "🚀 Deploying application..."
+        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
+        # docker build -t myapp .
+        # docker push myapp
+        # kubectl apply -f deployment.yaml
+        echo "✅ Deployment completed!"
