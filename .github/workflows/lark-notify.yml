@@ -8,22 +8,53 @@ on:
 
 env:
   LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
+  APP_ID: "cli_a8b2c70af7389029"
+  APP_SECRET: "QUbHQALAU0xrxWid9QU8Hb50wpY1wtwv"
 
 jobs:
   deploy-and-notify:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
     - name: Get commit info
       id: commit_info
       run: |
         echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
         echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
         echo "repo_url=${{ github.event.repository.html_url }}" >> $GITHUB_OUTPUT
-
+        echo "commit_list<<EOF" >> $GITHUB_OUTPUT
+        git log -3 --pretty=format:'• %s' >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Get Lark tenant access token
+      id: get_token
+      run: |
+        TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "app_id": "'$APP_ID'",
+            "app_secret": "'$APP_SECRET'"
+          }' | jq -r '.tenant_access_token')
+        echo "token=$TOKEN" >> $GITHUB_OUTPUT
+    
+    - name: Download GitHub logo
+      run: |
+        curl -o github_logo.png https://raw.githubusercontent.com/kunaaa123/bot_test_Workflow/refs/heads/main/github_logo.png
+    
+    - name: Upload image to Lark
+      id: upload_image
+      run: |
+        IMAGE_KEY=$(curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/images" \
+          -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+          -F "image_type=message" \
+          -F "image=@github_logo.png" | jq -r '.data.image_key')
+        echo "image_key=$IMAGE_KEY" >> $GITHUB_OUTPUT
+    
     - name: Send notification to Lark
       run: |
         curl -X POST "$LARK_WEBHOOK" \
@@ -34,15 +65,54 @@ jobs:
               "header": {
                 "title": {
                   "tag": "plain_text",
-                  "content": "🚀 Frontend Deployment"
+                  "content": "Frontend Deployment"
                 },
                 "template": "blue"
               },
               "elements": [
                 {
                   "tag": "img",
-                  "img_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-                  "mode": "fit_horizontal"
+                  "img_key": "${{ steps.upload_image.outputs.image_key }}",
+                  "mode": "fit_horizontal",
+                  "preview": false
+                },
+                {
+                  "tag": "hr"
+                },
+                {
+                  "tag": "column_set",
+                  "flex_mode": "none",
+                  "background_style": "grey",
+                  "columns": [
+                    {
+                      "tag": "column",
+                      "width": "weighted",
+                      "weight": 1,
+                      "elements": [
+                        {
+                          "tag": "div",
+                          "text": {
+                            "tag": "lark_md",
+                            "content": "**ENV**\n🟢 DEV"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "column",
+                      "width": "weighted",
+                      "weight": 1,
+                      "elements": [
+                        {
+                          "tag": "div",
+                          "text": {
+                            "tag": "lark_md",
+                            "content": "**🤖 Deployer**\n${{ steps.commit_info.outputs.author_name }}"
+                          }
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "tag": "hr"
@@ -51,15 +121,21 @@ jobs:
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Deployer:** ${{ steps.commit_info.outputs.author_name }}"
+                    "content": "**Service Name**\n🚀 ${{ github.event.repository.name }}"
                   }
+                },
+                {
+                  "tag": "hr"
                 },
                 {
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Commit:** ${{ steps.commit_info.outputs.commit_message }}"
+                    "content": "**Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
                   }
+                },
+                {
+                  "tag": "hr"
                 },
                 {
                   "tag": "action",
@@ -67,10 +143,10 @@ jobs:
                     {
                       "tag": "button",
                       "text": {
-                        "content": "🔗 View Repo",
+                        "content": "View repo",
                         "tag": "plain_text"
                       },
-                      "url": "${{ steps.commit_info.outputs.repo_url }}",
+                      "url": "${{ github.event.repository.html_url }}",
                       "type": "primary"
                     }
                   ]
@@ -78,10 +154,13 @@ jobs:
               ]
             }
           }'
-
+    
     - name: Deploy application
       run: |
         echo "🚀 Deploying frontend application..."
+        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
         # npm run build
         # aws s3 sync dist/ s3://your-bucket/
+        # docker build -t frontend-app .
+        # docker push frontend-app
         echo "✅ Frontend deployment completed!"
