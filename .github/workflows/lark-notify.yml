@@ -3,7 +3,7 @@ name: Notify to Lark on Push
 on:
   push:
     branches:
-      - main  # เปลี่ยนเป็น branch ที่คุณใช้งานจริง
+      - main
 
 jobs:
   notify:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Notify Lark
         run: |
-          curl -X POST https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff
+          curl -X POST https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff \
             -H "Content-Type: application/json" \
             -d '{
               "msg_type": "text",
