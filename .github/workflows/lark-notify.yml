@@ -93,7 +93,7 @@ jobs:
                           "tag": "div",
                           "text": {
                             "tag": "lark_md",
-                            "content": "**ENV**\n DEV"
+                            "content": "**ENV**\nDEV"
                           }
                         }
                       ]
@@ -107,7 +107,7 @@ jobs:
                           "tag": "div",
                           "text": {
                             "tag": "lark_md",
-                            "content": "** Deployer**\n${{ steps.commit_info.outputs.author_name }}"
+                            "content": "** Deployer**\n ${{ steps.commit_info.outputs.author_name }}"
                           }
                         }
                       ]
