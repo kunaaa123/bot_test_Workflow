@@ -93,7 +93,7 @@ jobs:
                           "tag": "div",
                           "text": {
                             "tag": "lark_md",
-                            "content": "**ENV**\n🟢 DEV"
+                            "content": "**ENV**\n DEV"
                           }
                         }
                       ]
@@ -107,7 +107,7 @@ jobs:
                           "tag": "div",
                           "text": {
                             "tag": "lark_md",
-                            "content": "**🤖 Deployer**\n${{ steps.commit_info.outputs.author_name }}"
+                            "content": "** Deployer**\n${{ steps.commit_info.outputs.author_name }}"
                           }
                         }
                       ]
@@ -121,7 +121,7 @@ jobs:
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Service Name**\n🚀 ${{ github.event.repository.name }}"
+                    "content": "**Service Name**\n ${{ github.event.repository.name }}"
                   }
                 },
                 {
@@ -131,7 +131,7 @@ jobs:
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Commit Messages** 🤔\n${{ steps.commit_info.outputs.commit_list }}"
+                    "content": "**Commit Messages** \n${{ steps.commit_info.outputs.commit_list }}"
                   }
                 },
                 {
@@ -143,7 +143,7 @@ jobs:
                     {
                       "tag": "button",
                       "text": {
-                        "content": "View repo",
+                        "content": "View Repository",
                         "tag": "plain_text"
                       },
                       "url": "${{ github.event.repository.html_url }}",
@@ -154,13 +154,3 @@ jobs:
               ]
             }
           }'
-    
-    - name: Deploy application
-      run: |
-        echo "🚀 Deploying frontend application..."
-        # ใส่คำสั่ง deployment ที่ต้องการ เช่น
-        # npm run build
-        # aws s3 sync dist/ s3://your-bucket/
-        # docker build -t frontend-app .
-        # docker push frontend-app
-        echo "✅ Frontend deployment completed!"
