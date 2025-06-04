@@ -9,6 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      LARK_WEBHOOK_URL: "https://open.larkoffice.com/open-apis/bot/v2/hook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      LARK_BOT_TOKEN: "your-bot-token"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,11 +21,9 @@ jobs:
         id: upload_image
         run: |
           curl -X POST "https://open.larkoffice.com/open-apis/im/v1/images" \
-            -H "Authorization: Bearer ${{ secrets.LARK_BOT_TOKEN }}" \
+            -H "Authorization: Bearer $LARK_BOT_TOKEN" \
             -F "image=@./assets/backend-banner.png" \
             | jq -r '.data.image_key' > image_key.txt
-        env:
-          LARK_BOT_TOKEN: ${{ secrets.LARK_BOT_TOKEN }}
 
       - name: Read image key
         id: read_image_key
@@ -29,7 +31,7 @@ jobs:
 
       - name: Send notification to Lark
         run: |
-          curl -X POST ${{ secrets.LARK_WEBHOOK_URL }} \
+          curl -X POST "$LARK_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d '{
               "msg_type": "interactive",
