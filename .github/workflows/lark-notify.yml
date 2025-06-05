@@ -94,7 +94,7 @@ jobs:
                       "elements": [
                         {
                           "tag": "markdown",
-                          "content": "**Environment**\n<font color=\"green\">DEV</font>",
+                          "content": "**ENV**\n<font color=\"green\">DEV</font>",
                           "text_align": "center"
                         }
                       ]
@@ -110,7 +110,12 @@ jobs:
                           "text_align": "center"
                         }
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "tag": "column_set",
+                  "columns": [
                     {
                       "tag": "column",
                       "width": "weighted",
