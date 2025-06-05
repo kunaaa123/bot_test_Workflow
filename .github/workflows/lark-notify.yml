@@ -14,11 +14,11 @@ env:
 jobs:
   deploy-and-notify:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Get commit info
       id: commit_info
       run: |
@@ -30,7 +30,7 @@ jobs:
         git log -3 --pretty=format:'• %s' >> $GITHUB_OUTPUT
         echo "" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
-    
+
     - name: Get Lark tenant access token
       id: get_token
       run: |
@@ -41,11 +41,11 @@ jobs:
             "app_secret": "'$APP_SECRET'"
           }' | jq -r '.tenant_access_token')
         echo "token=$TOKEN" >> $GITHUB_OUTPUT
-    
+
     - name: Download GitHub logo
       run: |
-          curl -o github_logo.png https://it.gwu.edu/sites/g/files/zaxdzs5486/files/2023-10/github_logo.png
-    
+        curl -o github_logo.png https://it.gwu.edu/sites/g/files/zaxdzs5486/files/2023-10/github_logo.png
+
     - name: Upload image to Lark
       id: upload_image
       run: |
@@ -54,7 +54,7 @@ jobs:
           -F "image_type=message" \
           -F "image=@github_logo.png" | jq -r '.data.image_key')
         echo "image_key=$IMAGE_KEY" >> $GITHUB_OUTPUT
-    
+
     - name: Send notification to Lark
       run: |
         curl -X POST "$LARK_WEBHOOK" \
@@ -86,25 +86,16 @@ jobs:
                 },
                 {
                   "tag": "column_set",
-                  "flex_mode": "stretch",
-                  "background_style": "default",
                   "columns": [
                     {
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
-                      "vertical_align": "center",
                       "elements": [
                         {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**Environment**\n\n<font color=\"green\">DEV</font>"
-                          },
-                          "extra": {
-                            "tag": "plain_text",
-                            "content": ""
-                          }
+                          "tag": "markdown",
+                          "content": "**Environment**\n<font color=\"green\">DEV</font>",
+                          "text_align": "center"
                         }
                       ]
                     },
@@ -112,18 +103,11 @@ jobs:
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
-                      "vertical_align": "center",
                       "elements": [
                         {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**Deployer**\n\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>"
-                          },
-                          "extra": {
-                            "tag": "plain_text",
-                            "content": ""
-                          }
+                          "tag": "markdown",
+                          "content": "**Deployer**\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>",
+                          "text_align": "center"
                         }
                       ]
                     },
@@ -131,25 +115,15 @@ jobs:
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
-                      "vertical_align": "center",
                       "elements": [
                         {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**Service Name**\n\n<font color=\"red\">${{ github.event.repository.name }}</font>"
-                          },
-                          "extra": {
-                            "tag": "plain_text",
-                            "content": ""
-                          }
+                          "tag": "markdown",
+                          "content": "**Service Name**\n<font color=\"red\">${{ github.event.repository.name }}</font>",
+                          "text_align": "center"
                         }
                       ]
                     }
                   ]
-                },
-                {
-                  "tag": "hr"
                 },
                 {
                   "tag": "div",
