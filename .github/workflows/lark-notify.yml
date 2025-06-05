@@ -31,11 +31,12 @@ jobs:
     - name: Determine Environment
       id: set_env
       run: |
-        if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+        ref_name="${GITHUB_REF##*/}"
+        if [[ "$ref_name" == "main" ]]; then
           echo "env_name=PROD" >> $GITHUB_OUTPUT
-        elif [[ "${GITHUB_REF##*/}" == "staging" ]]; then
+        elif [[ "$ref_name" == "staging" ]]; then
           echo "env_name=STAGING" >> $GITHUB_OUTPUT
-        elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+        elif [[ "$ref_name" =~ ^dev ]]; then
           echo "env_name=DEV" >> $GITHUB_OUTPUT
         else
           echo "env_name=UNKNOWN" >> $GITHUB_OUTPUT
@@ -72,16 +73,56 @@ jobs:
                 },
                 {
                   "tag": "column_set",
+                  "flex_mode": "none",
+                  "background_style": "default",
                   "columns": [
                     {
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
+                      "vertical_align": "top",
                       "elements": [
                         {
-                          "tag": "markdown",
-                          "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>",
-                          "text_align": "center"
+                          "tag": "div",
+                          "text": {
+                            "tag": "lark_md",
+                            "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>"
+                          },
+                          "extra": {
+                            "tag": "div",
+                            "style": {
+                              "border": {
+                                "top": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "right": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "bottom": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "left": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                }
+                              },
+                              "padding": {
+                                "top": "10px",
+                                "right": "10px",
+                                "bottom": "10px",
+                                "left": "10px"
+                              },
+                              "border_radius": "6px",
+                              "background_color": "#F9FAFB"
+                            }
+                          }
                         }
                       ]
                     },
@@ -89,11 +130,49 @@ jobs:
                       "tag": "column",
                       "width": "weighted",
                       "weight": 1,
+                      "vertical_align": "top",
                       "elements": [
                         {
-                          "tag": "markdown",
-                          "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
-                          "text_align": "center"
+                          "tag": "div",
+                          "text": {
+                            "tag": "lark_md",
+                            "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>"
+                          },
+                          "extra": {
+                            "tag": "div",
+                            "style": {
+                              "border": {
+                                "top": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "right": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "bottom": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                },
+                                "left": {
+                                  "color": "#E5E7EB",
+                                  "width": "1px",
+                                  "style": "solid"
+                                }
+                              },
+                              "padding": {
+                                "top": "10px",
+                                "right": "10px",
+                                "bottom": "10px",
+                                "left": "10px"
+                              },
+                              "border_radius": "6px",
+                              "background_color": "#F9FAFB"
+                            }
+                          }
                         }
                       ]
                     }
@@ -101,6 +180,7 @@ jobs:
                 },
                 {
                   "tag": "column_set",
+                  "flex_mode": "none",
                   "background_style": "grey",
                   "columns": [
                     {
