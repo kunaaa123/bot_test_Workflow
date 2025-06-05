@@ -73,39 +73,50 @@ jobs:
                   },
                   {
                     "tag": "column_set",
-                    "background_style": "grey",
                     "columns": [
                       {
                         "tag": "column",
                         "width": "weighted",
-                        "weight": 1,
                         "elements": [
                           {
-                            "tag": "markdown",
-                            "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>",
-                            "text_align": "center"
-                          }
-                        ]
-                      },
-                      {
-                        "tag": "column",
-                        "width": "fixed",
-                        "elements": [
-                          {
-                            "tag": "markdown",
-                            "content": " "
+                            "tag": "column_set",
+                            "background_style": "grey",
+                            "columns": [
+                              {
+                                "tag": "column",
+                                "width": "weighted",
+                                "elements": [
+                                  {
+                                    "tag": "markdown",
+                                    "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>",
+                                    "text_align": "center"
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
                       },
                       {
                         "tag": "column",
                         "width": "weighted",
-                        "weight": 1,
                         "elements": [
                           {
-                            "tag": "markdown",
-                            "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
-                            "text_align": "center"
+                            "tag": "column_set",
+                            "background_style": "grey",
+                            "columns": [
+                              {
+                                "tag": "column",
+                                "width": "weighted",
+                                "elements": [
+                                  {
+                                    "tag": "markdown",
+                                    "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
+                                    "text_align": "center"
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
                       }
@@ -118,7 +129,6 @@ jobs:
                       {
                         "tag": "column",
                         "width": "weighted",
-                        "weight": 2,
                         "elements": [
                           {
                             "tag": "markdown",
