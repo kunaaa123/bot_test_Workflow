@@ -126,7 +126,7 @@ jobs:
                               "elements": [
                                 {
                                   "tag": "markdown",
-                                  "content": "**Deployer**\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>",
+                                  "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
                                   "text_align": "center"
                                 }
                               ]
