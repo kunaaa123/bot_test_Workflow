@@ -95,7 +95,7 @@ jobs:
                       "elements": [
                         {
                           "tag": "markdown",
-                          "content": "**Environment**\n<font color=\"green\">DEV</font>",
+                          "content": "**ENV**\n<font color=\"green\">DEV</font>",
                           "text_align": "center"
                         }
                       ]
