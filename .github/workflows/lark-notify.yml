@@ -89,6 +89,16 @@ jobs:
                     },
                     {
                       "tag": "column",
+                      "width": "fixed",
+                      "elements": [
+                        {
+                          "tag": "markdown",
+                          "content": " "
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "column",
                       "width": "weighted",
                       "weight": 1,
                       "elements": [
