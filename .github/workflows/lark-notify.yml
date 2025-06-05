@@ -67,11 +67,12 @@ jobs:
                     "tag": "plain_text",
                     "content": "GitHub Logo"
                   },
-                  "mode": "fit_horizontal"
+                  "mode": "fit_horizontal",
+                  "preview": true,
+                  "compact_width": false
                 },
                 {
                   "tag": "column_set",
-                  "background_style": "grey",
                   "columns": [
                     {
                       "tag": "column",
@@ -79,9 +80,21 @@ jobs:
                       "weight": 1,
                       "elements": [
                         {
-                          "tag": "markdown",
-                          "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>",
-                          "text_align": "center"
+                          "tag": "div",
+                          "fields": [
+                            {
+                              "tag": "markdown",
+                              "content": "**ENV**"
+                            },
+                            {
+                              "tag": "markdown",
+                              "content": "<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>"
+                            }
+                          ],
+                          "border": true,
+                          "background_color": "#f0f8ff",
+                          "padding": "10px",
+                          "corner_radius": 5
                         }
                       ]
                     },
@@ -91,9 +104,21 @@ jobs:
                       "weight": 1,
                       "elements": [
                         {
-                          "tag": "markdown",
-                          "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
-                          "text_align": "center"
+                          "tag": "div",
+                          "fields": [
+                            {
+                              "tag": "markdown",
+                              "content": "**Deployer**"
+                            },
+                            {
+                              "tag": "markdown",
+                              "content": "<font color=\"blue\">${{ github.actor }}</font>"
+                            }
+                          ],
+                          "border": true,
+                          "background_color": "#e6f7ff",
+                          "padding": "10px",
+                          "corner_radius": 5
                         }
                       ]
                     }
@@ -106,6 +131,7 @@ jobs:
                     {
                       "tag": "column",
                       "width": "weighted",
+                      "weight": 2,
                       "elements": [
                         {
                           "tag": "markdown",
