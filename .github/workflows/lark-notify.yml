@@ -1,11 +1,11 @@
 name: Deploy and Notify Lark
 
 on:
-  push:
-  pull_request:
+  push: {}
+  pull_request: {}
 
 env:
-  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
+  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/f6e88196-4d16-4b22-aba2-9b86bdaa5fd9"
   LARK_IMAGE_KEY: "img_v3_02mv_ee04e1cd-f046-44e0-a78c-95a7f63b6bhu"
 
 jobs:
@@ -13,211 +13,143 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Get commit info
-      id: commit_info
-      run: |
-        echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
-        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
-        echo "repo_url=${{ github.event.repository.html_url }}" >> $GITHUB_OUTPUT
-        echo "commit_list<<EOF" >> $GITHUB_OUTPUT
-        git log -3 --pretty=format:'• %s' >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+      - name: Get commit info
+        id: commit_info
+        run: |
+          echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "repo_name=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "repo_url=${{ github.event.repository.html_url }}" >> $GITHUB_OUTPUT
+          echo "commit_list<<EOF" >> $GITHUB_OUTPUT
+          git log -3 --pretty=format:'• %s' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Determine Environment
-      id: set_env
-      run: |
-        ref_name="${GITHUB_REF##*/}"
-        if [[ "$ref_name" == "main" ]]; then
-          echo "env_name=PROD" >> $GITHUB_OUTPUT
-        elif [[ "$ref_name" == "staging" ]]; then
-          echo "env_name=STAGING" >> $GITHUB_OUTPUT
-        elif [[ "$ref_name" =~ ^dev ]]; then
-          echo "env_name=DEV" >> $GITHUB_OUTPUT
-        else
-          echo "env_name=UNKNOWN" >> $GITHUB_OUTPUT
-        fi
+      - name: Determine Environment
+        id: set_env
+        run: |
+          ref_name="${GITHUB_REF##*/}"
+          if [[ "$ref_name" == "main" ]]; then
+            echo "env_name=PROD" >> $GITHUB_OUTPUT
+          elif [[ "$ref_name" == "staging" ]]; then
+            echo "env_name=STAGING" >> $GITHUB_OUTPUT
+          elif [[ "$ref_name" =~ ^dev ]]; then
+            echo "env_name=DEV" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=UNKNOWN" >> $GITHUB_OUTPUT
+          fi
 
-    - name: Send notification to Lark
-      run: |
-        curl -X POST "$LARK_WEBHOOK" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "msg_type": "interactive",
-            "card": {
-              "config": {
-                "wide_screen_mode": true
-              },
-              "header": {
-                "title": {
-                  "tag": "plain_text",
-                  "content": "Backend Deployment"
+      - name: Send notification to Lark
+        run: |
+          curl -X POST "$LARK_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "msg_type": "interactive",
+              "card": {
+                "config": {
+                  "wide_screen_mode": true
                 },
-                "template": "blue"
-              },
-              "elements": [
-                {
-                  "tag": "img",
-                  "img_key": "'"${LARK_IMAGE_KEY}"'",
-                  "alt": {
+                "header": {
+                  "title": {
                     "tag": "plain_text",
-                    "content": "GitHub Logo"
+                    "content": "Backend Deployment"
                   },
-                  "mode": "fit_horizontal",
-                  "preview": true,
-                  "compact_width": false
+                  "template": "blue"
                 },
-                {
-                  "tag": "column_set",
-                  "flex_mode": "none",
-                  "background_style": "default",
-                  "columns": [
-                    {
-                      "tag": "column",
-                      "width": "weighted",
-                      "weight": 1,
-                      "vertical_align": "top",
-                      "elements": [
-                        {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>"
-                          },
-                          "extra": {
-                            "tag": "div",
-                            "style": {
-                              "border": {
-                                "top": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "right": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "bottom": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "left": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                }
-                              },
-                              "padding": {
-                                "top": "10px",
-                                "right": "10px",
-                                "bottom": "10px",
-                                "left": "10px"
-                              },
-                              "border_radius": "6px",
-                              "background_color": "#F9FAFB"
-                            }
-                          }
-                        }
-                      ]
+                "elements": [
+                  {
+                    "tag": "img",
+                    "img_key": "'"${LARK_IMAGE_KEY}"'",
+                    "alt": {
+                      "tag": "plain_text",
+                      "content": "GitHub Logo"
                     },
-                    {
-                      "tag": "column",
-                      "width": "weighted",
-                      "weight": 1,
-                      "vertical_align": "top",
-                      "elements": [
-                        {
-                          "tag": "div",
-                          "text": {
-                            "tag": "lark_md",
-                            "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>"
-                          },
-                          "extra": {
-                            "tag": "div",
-                            "style": {
-                              "border": {
-                                "top": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "right": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "bottom": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                },
-                                "left": {
-                                  "color": "#E5E7EB",
-                                  "width": "1px",
-                                  "style": "solid"
-                                }
-                              },
-                              "padding": {
-                                "top": "10px",
-                                "right": "10px",
-                                "bottom": "10px",
-                                "left": "10px"
-                              },
-                              "border_radius": "6px",
-                              "background_color": "#F9FAFB"
-                            }
+                    "mode": "fit_horizontal",
+                    "preview": true,
+                    "compact_width": false
+                  },
+                  {
+                    "tag": "column_set",
+                    "background_style": "grey",
+                    "columns": [
+                      {
+                        "tag": "column",
+                        "width": "weighted",
+                        "weight": 1,
+                        "elements": [
+                          {
+                            "tag": "markdown",
+                            "content": "**ENV**\n<font color=\"green\">${{ steps.set_env.outputs.env_name }}</font>",
+                            "text_align": "center"
                           }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "tag": "column_set",
-                  "flex_mode": "none",
-                  "background_style": "grey",
-                  "columns": [
-                    {
-                      "tag": "column",
-                      "width": "weighted",
-                      "weight": 1,
-                      "elements": [
-                        {
-                          "tag": "markdown",
-                          "content": "**Service Name**\n<font color=\"red\">${{ github.event.repository.name }}</font>",
-                          "text_align": "center"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "tag": "div",
-                  "text": {
-                    "tag": "lark_md",
-                    "content": "**Commit Messages**\n${{ steps.commit_info.outputs.commit_list }}"
-                  }
-                },
-                {
-                  "tag": "action",
-                  "actions": [
-                    {
-                      "tag": "button",
-                      "text": {
-                        "content": "View Repository",
-                        "tag": "plain_text"
+                        ]
                       },
-                      "url": "${{ github.event.repository.html_url }}",
-                      "type": "primary"
+                      {
+                        "tag": "column",
+                        "width": "fixed",
+                        "elements": [
+                          {
+                            "tag": "markdown",
+                            "content": " "
+                          }
+                        ]
+                      },
+                      {
+                        "tag": "column",
+                        "width": "weighted",
+                        "weight": 1,
+                        "elements": [
+                          {
+                            "tag": "markdown",
+                            "content": "**Deployer**\n<font color=\"blue\">${{ github.actor }}</font>",
+                            "text_align": "center"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "tag": "column_set",
+                    "background_style": "grey",
+                    "columns": [
+                      {
+                        "tag": "column",
+                        "width": "weighted",
+                        "weight": 2,
+                        "elements": [
+                          {
+                            "tag": "markdown",
+                            "content": "**Service Name**\n<font color=\"red\">${{ github.event.repository.name }}</font>",
+                            "text_align": "center"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "tag": "div",
+                    "text": {
+                      "tag": "lark_md",
+                      "content": "**Commit Messages**\n${{ steps.commit_info.outputs.commit_list }}"
                     }
-                  ]
-                }
-              ]
-            }
-          }'
+                  },
+                  {
+                    "tag": "action",
+                    "actions": [
+                      {
+                        "tag": "button",
+                        "text": {
+                          "content": "View Repository",
+                          "tag": "plain_text"
+                        },
+                        "url": "${{ github.event.repository.html_url }}",
+                        "type": "primary"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }'
