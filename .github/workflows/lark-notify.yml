@@ -7,6 +7,7 @@ on:
 env:
   LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
   LARK_IMAGE_KEY: "img_v3_02mv_ee04e1cd-f046-44e0-a78c-95a7f63b6bhu"
+  ENVIRONMENT: "DEV"  # เปลี่ยนเป็น UAT, STAGING, PROD ได้ตามต้องการ
 
 jobs:
   deploy-and-notify:
@@ -76,7 +77,7 @@ jobs:
                               "elements": [
                                 {
                                   "tag": "markdown",
-                                  "content": "**ENV**\n<font color=\"green\">DEV</font>",
+                                  "content": "**ENV**\n<font color=\"green\">'"${ENVIRONMENT}"'</font>",
                                   "text_align": "center"
                                 }
                               ]
