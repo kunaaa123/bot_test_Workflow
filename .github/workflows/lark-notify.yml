@@ -5,7 +5,7 @@ on:
   pull_request: {}
 
 env:
-  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
+  LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/0cb0f8a4-9c7f-41f9-b30f-db6f22ae47c8"
   LARK_IMAGE_KEY: "img_v3_02mv_ee04e1cd-f046-44e0-a78c-95a7f63b6bhu"
 
 jobs:
