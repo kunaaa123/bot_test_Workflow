@@ -99,7 +99,13 @@ jobs:
                           "text_align": "center"
                         }
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "tag": "column_set",
+                  "background_style": "grey",
+                  "columns": [
                     {
                       "tag": "column",
                       "width": "weighted",
@@ -136,7 +142,7 @@ jobs:
                   "tag": "div",
                   "text": {
                     "tag": "lark_md",
-                    "content": "**Recent Commit Messages**\n${{ steps.commit_info.outputs.commit_list }}"
+                    "content": "**Commit Messages**\n${{ steps.commit_info.outputs.commit_list }}"
                   }
                 },
                 {
