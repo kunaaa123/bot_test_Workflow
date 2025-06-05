@@ -86,6 +86,7 @@ jobs:
                 },
                 {
                   "tag": "column_set",
+                  "background_style": "grey",
                   "columns": [
                     {
                       "tag": "column",
@@ -95,6 +96,7 @@ jobs:
                         {
                           "tag": "markdown",
                           "content": "**Environment**\n<font color=\"green\">DEV</font>",
+                          "text_align": "center"
                         }
                       ]
                     },
@@ -106,6 +108,7 @@ jobs:
                         {
                           "tag": "markdown",
                           "content": "**Deployer**\n<font color=\"blue\">${{ steps.commit_info.outputs.author_name }}</font>",
+                          "text_align": "center"
                         }
                       ]
                     }
@@ -113,6 +116,7 @@ jobs:
                 },
                 {
                   "tag": "column_set",
+                  "background_style": "grey",
                   "columns": [
                     {
                       "tag": "column",
@@ -122,6 +126,7 @@ jobs:
                         {
                           "tag": "markdown",
                           "content": "**Service Name**\n<font color=\"red\">${{ github.event.repository.name }}</font>",
+                          "text_align": "center"
                         }
                       ]
                     }
