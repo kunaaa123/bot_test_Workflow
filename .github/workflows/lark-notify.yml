@@ -67,9 +67,7 @@ jobs:
                     "tag": "plain_text",
                     "content": "GitHub Logo"
                   },
-                  "mode": "fit_horizontal",
-                  "preview": true,
-                  "compact_width": false
+                  "mode": "fit_horizontal"
                 },
                 {
                   "tag": "column_set",
@@ -108,7 +106,6 @@ jobs:
                     {
                       "tag": "column",
                       "width": "weighted",
-                      "weight": 2,
                       "elements": [
                         {
                           "tag": "markdown",
