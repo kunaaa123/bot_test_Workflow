@@ -2,9 +2,7 @@ name: Deploy and Notify Lark
 
 on:
   push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
 
 env:
   LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
