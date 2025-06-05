@@ -6,7 +6,7 @@ on:
 
 env:
   LARK_WEBHOOK: "https://open.larksuite.com/open-apis/bot/v2/hook/88fccfea-8fad-47d9-99a9-44d214785fff"
-  LARK_IMAGE_KEY: "${{img_v3_02mv_ee04e1cd-f046-44e0-a78c-95a7f63b6bhu}}" # image_key ที่ได้มา
+  LARK_IMAGE_KEY: "img_v3_02mv_ee04e1cd-f046-44e0-a78c-95a7f63b6bhu"
 
 jobs:
   deploy-and-notify:
